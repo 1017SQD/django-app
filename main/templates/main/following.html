@@ -1,0 +1,86 @@
+{% extends "main/base.html" %} {% block content %} {% if user.is_authenticated%}
+<div class="container">
+  <div class="row">
+    <div class="col-lg-12">
+      <h1 class="text-center">Liste de mes abonnements</h1>
+      <hr />
+    </div>
+  </div>
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-2">
+    {% for following in myfollowing %}
+    <div class="col mb-4">
+      <div class="card">
+        <img
+          src="{{ following.profile_image_url }}"
+          class="card-img-top rounded-circle mx-auto mt-3"
+          alt="Photo de profil de @{{ following.screen_name }}"
+          style="width: 100px; height: 100px"
+          ;
+        />
+        <div class="card-body text-center">
+          <h6 class="card-title">{{ following.name }}</h6>
+          <p class="text-muted mb-3">
+            <a
+              href="https://twitter.com/{{ following.screen_name }}"
+              class="text-decoration-none text-reset"
+              >@{{ following.screen_name }}</a
+            >
+          </p>
+          <form
+            id="unfollow-form-{{ following.user_twitter_id }}"
+            method="post"
+            action="{% url 'unfollow' following.user_twitter_id %}"
+          >
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Unfollow</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% if myfollowing.has_other_pages %}
+  <nav aria-label="Page navigation example">
+    <ul class="pagination justify-content-center">
+      {% if myfollowing.has_previous %}
+      <li class="page-item"><a class="page-link" href="?page=1">&laquo;</a></li>
+      <li class="page-item">
+        <a class="page-link" href="?page={{ myfollowing.previous_page_number }}"
+          >{{ myfollowing.previous_page_number }}</a
+        >
+      </li>
+      {% endif %}
+      <li class="page-item active">
+        <a class="page-link" href="#">{{ myfollowing.number }}</a>
+      </li>
+      {% if myfollowing.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ myfollowing.next_page_number }}"
+          >{{ myfollowing.next_page_number }}</a
+        >
+      </li>
+      <li class="page-item">
+        <a class="page-link" href="?page={{ myfollowing.paginator.num_pages }}"
+          >&raquo;</a
+        >
+      </li>
+      {% endif %}
+    </ul>
+  </nav>
+  {% endif %}
+</div>
+{% else %}
+<br />
+<h2>Example body text</h2>
+<p>
+  Nullam quis risus eget <a href="#">urna mollis ornare</a> vel eu leo. Cum
+  sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus
+  mus. Nullam id dolor id nibh ultricies vehicula.
+</p>
+<p><small>This line of text is meant to be treated as fine print.</small></p>
+<p>The following is <strong>rendered as bold text</strong>.</p>
+<p>The following is <em>rendered as italicized text</em>.</p>
+<p>
+  An abbreviation of the word attribute is <abbr title="attribute">attr</abbr>.
+</p>
+{% endif %} {% endblock content %}

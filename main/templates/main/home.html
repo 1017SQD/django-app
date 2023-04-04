@@ -1,0 +1,275 @@
+{% extends "main/base.html" %}{% block content %}
+<!-- If successful login -->
+{% if user.is_authenticated %}
+<!-- Begin Page Content -->
+  <!-- Page Heading -->
+  <div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
+    <a
+      href="#"
+      class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"
+      ><i class="fas fa-download fa-sm text-white-50"></i> Generate Report</a
+    >
+  </div>
+  <div class="row">
+    <!-- Earnings (Monthly) Card Example -->
+    <div class="col-xl-3 col-md-6 mb-4">
+      <div class="card border-left-primary shadow h-100 py-2">
+        <div class="card-body">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div
+                class="text-xs font-weight-bold text-primary text-uppercase mb-1"
+              >
+                Average Impressions
+              </div>
+              <div class="h5 mb-0 font-weight-bold text-gray-800">$40,000</div>
+            </div>
+            <div class="col-auto">
+              <i class="fas fa-calendar fa-2x text-gray-300"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Earnings (Annual) Card Example -->
+    <div class="col-xl-3 col-md-6 mb-4">
+      <div class="card border-left-success shadow h-100 py-2">
+        <div class="card-body">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div
+                class="text-xs font-weight-bold text-success text-uppercase mb-1"
+              >
+                Engagement Rate
+              </div>
+              <div class="h5 mb-0 font-weight-bold text-gray-800">3.46%</div>
+            </div>
+            <div class="col-auto">
+              <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tasks Card Example -->
+    <div class="col-xl-3 col-md-6 mb-4">
+      <div class="card border-left-info shadow h-100 py-2">
+        <div class="card-body">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div
+                class="text-xs font-weight-bold text-info text-uppercase mb-1"
+              >
+                Tasks
+              </div>
+              <div class="row no-gutters align-items-center">
+                <div class="col-auto">
+                  <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">
+                    50%
+                  </div>
+                </div>
+                <div class="col">
+                  <div class="progress progress-sm mr-2">
+                    <div
+                      class="progress-bar bg-info"
+                      role="progressbar"
+                      style="width: 50%"
+                      aria-valuenow="50"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-auto">
+              <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pending Requests Card Example -->
+    <div class="col-xl-3 col-md-6 mb-4">
+      <div class="card border-left-warning shadow h-100 py-2">
+        <div class="card-body">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div
+                class="text-xs font-weight-bold text-warning text-uppercase mb-1"
+              >
+                Pending Requests
+              </div>
+              <div class="h5 mb-0 font-weight-bold text-gray-800">18</div>
+            </div>
+            <div class="col-auto">
+              <i class="fas fa-comments fa-2x text-gray-300"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Begin Page Content -->
+  <!-- Content Row -->
+  <div class="row">
+    <!-- Profile Card -->
+    <div class="col-xl-4 col-lg-5 mb-4">
+      <div class="card border-0 shadow-sm">
+        {% for user in user_profile_twitter %}
+        <img
+          src="{{user.profile_banner_url}}"
+          class="card-img-top rounded-top"
+          alt="Profile Banner"
+        />
+        <div class="card-body">
+          <div class="text-center">
+            <img
+              src="{{user.profile_image_url}}"
+              class="rounded-circle border border-3 border-dark"
+              alt="Profile Image"
+              style="
+                width: 100px;
+                height: 100px;
+                position: relative;
+                top: -50px;
+              "
+            />
+          </div>
+          <h4 class="card-title text-center mt-6">{{user.name}}</h4>
+          <p class="card-text text-center mb-4">
+            <a
+              href="https://twitter.com/{{user.screen_name}}"
+              class="text-decoration-none text-reset"
+              >@{{user.screen_name}}</a
+            >
+          </p>
+          <p class="card-text text-center">{{user.description}}</p>
+          <div class="d-flex justify-content-between align-items-center mt-4">
+            <div class="text-center">
+              <h6 class="mb-0">
+                <a
+                  href="{% url 'following' %}"
+                  class="text-decoration-none text-reset"
+                  >Following</a
+                >
+              </h6>
+              <span style="font-size: 29px">{{user.friends_count}}</span>
+            </div>
+            <div class="text-center">
+              <h6 class="mb-0">
+                <a
+                  href="{% url 'followers' %}"
+                  class="text-decoration-none text-reset"
+                  >Followers</a
+                >
+              </h6>
+              <span style="font-size: 29px">{{user.followers_count}}</span>
+            </div>
+            <div class="text-center">
+              <h6 class="mb-0">
+                <a
+                  href="{% url 'tweets' %}"
+                  class="text-decoration-none text-reset"
+                  >Tweets</a
+                >
+              </h6>
+              <span style="font-size: 29px">{{user.statuses_count}}</span>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="col-xl-8 col-lg-7">
+      <!-- Pie Chart -->
+      <div class="card shadow mb-4">
+        <div class="card-body">{{chart|safe}}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-xl-8 col-lg-7">
+      <!-- Line Chart -->
+      <div class="card shadow mb-4">
+        <div class="card-body">{{chart7|safe}}</div>
+      </div>
+    </div>
+    <div class="col-xl-4 col-lg-5">
+      <!-- Indicator Chart -->
+      <div class="card shadow mb-4">
+        <div class="card-body">{{chart8|safe}}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-xl-8 col-lg-7 mt-4">
+      <!-- Pie Chart -->
+      <div class="card shadow mb-4">
+        <div class="card-body">{{chart4|safe}}</div>
+      </div>
+    </div>
+    <div class="col-xl-4 col-lg-5 mt-4">
+      <!-- Indicator Chart -->
+      <div class="card shadow mb-4">
+        <div class="card-body">{{chart2|safe}}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-xl-8 col-lg-7 mt-4">
+      <!-- Line Chart -->
+      <div class="card shadow mb-4">
+        <div class="card-body">{{chart5|safe}}</div>
+      </div>
+    </div>
+    <div class="col-xl-4 col-lg-5 mt-4">
+      <!-- Indicator Chart -->
+      <div class="card shadow mb-4">
+        <div class="card-body">{{chart3|safe}}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-xl-8 col-lg-7 mt-4">
+      <!-- Line Chart -->
+      <div class="card shadow mb-4">
+        <div class="card-body">{{chart9|safe}}</div>
+      </div>
+    </div>
+    <div class="col-xl-4 col-lg-5 mt-4">
+      <!-- Indicator Chart -->
+      <div class="card shadow mb-4">
+        <div class="card-body">{{chart10|safe}}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- /.container-fluid -->
+  <!-- If not successful login -->
+  {% else %}
+  <br />
+  <h2>Example body text</h2>
+  <p>
+    Nullam quis risus eget <a href="#">urna mollis ornare</a> vel eu leo. Cum
+    sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus
+    mus. Nullam id dolor id nibh ultricies vehicula.
+  </p>
+  <p><small>This line of text is meant to be treated as fine print.</small></p>
+  <p>The following is <strong>rendered as bold text</strong>.</p>
+  <p>The following is <em>rendered as italicized text</em>.</p>
+  <p>
+    An abbreviation of the word attribute is
+    <abbr title="attribute">attr</abbr>.
+  </p>
+  {% endif %} {% endblock content %}
+</div>
