@@ -479,3 +479,4 @@ def mutual_followers(request):
 @login_required    
 def tweets(request):
     return render(request, 'main/tweets.html')
+

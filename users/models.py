@@ -44,7 +44,7 @@ class UserTimeline(models.Model):
     class Meta:
         verbose_name_plural = 'User Timelines'
 
-class NotFollowingBack(models.Model):
+class TwitterUser(models.Model):
     user_twitter_id = models.BigIntegerField()
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     name = models.CharField(max_length=50)
@@ -53,41 +53,27 @@ class NotFollowingBack(models.Model):
     profile_image_url = models.URLField(blank=True)
     description = models.CharField(max_length=250, blank=True)
 
-    def __str__(self):
-        return f'{self.name} ({self.screen_name})'
-
-class Follower(models.Model):
-    user_twitter_id = models.BigIntegerField()
-    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
-    name = models.CharField(max_length=50)
-    screen_name = models.CharField(max_length=15)
-    location = models.CharField(max_length=255, blank=True)
-    profile_image_url = models.URLField(blank=True)
-    description = models.CharField(max_length=250, blank=True)
+    class Meta:
+        abstract = True
 
     def __str__(self):
         return f'{self.name} ({self.screen_name})'
-    
-class Following(models.Model):
-    user_twitter_id = models.BigIntegerField()
-    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
-    name = models.CharField(max_length=50)
-    screen_name = models.CharField(max_length=15)
-    location = models.CharField(max_length=255, blank=True)
-    profile_image_url = models.URLField(blank=True)
-    description = models.CharField(max_length=250, blank=True)
-    
-    def __str__(self):
-        return f'{self.name} ({self.screen_name})'
 
-class MutualFollower(models.Model):
-    user_twitter_id = models.BigIntegerField()
-    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
-    name = models.CharField(max_length=50)
-    screen_name = models.CharField(max_length=15)
-    location = models.CharField(max_length=255, blank=True)
-    profile_image_url = models.URLField(blank=True)
-    description = models.CharField(max_length=250, blank=True)
+class NotFollowingBack(TwitterUser):
+    pass
 
-    def __str__(self):
-        return f'{self.name} ({self.screen_name})'
+class Follower(TwitterUser):
+    pass
+
+class Following(TwitterUser):
+    pass
+
+class MutualFollower(TwitterUser):
+    pass
+
+# Importez votre modèle NotFollowingBack ici
+from django.db.models.signals import post_save
+from .signals import update_not_following_back
+
+# Connectez la fonction update_not_following_back au signal post_save
+post_save.connect(update_not_following_back, sender=NotFollowingBack)

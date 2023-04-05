@@ -1,5 +1,9 @@
 {% extends "main/base.html" %} {% block content %} {% if user.is_authenticated%}
-<h1>HOPE</h1>
+{% for rows in res %}
+  {{ rows.nom }}
+  {{ rows.prenom }}
+{% endfor %}
+<br>
 {% else %}
 <br />
 <h2>Example body text</h2>
