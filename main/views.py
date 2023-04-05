@@ -261,13 +261,16 @@ def metrics(request):
 def home(request):
     df_fig1, df_fig2, df_fig3, df_fig4, df_fig5, df_fig6, df_fig7, df_score, df_metrics = metrics(request)
     
-    fig1 = px.bar(data_frame=df_fig1, y="tweet_source", x="nb_source")
+    fig1 = px.pie(data_frame=df_fig1, names="tweet_source",
+                  values="nb_source", hole=.5,
+                  color_discrete_sequence=px.colors.sequential.RdBu)
 
     fig1.update_layout(margin=dict(l=20, r=20, t=30, b=20),
-                    plot_bgcolor='rgba(0,0,0,0)',
-                    paper_bgcolor='rgba(0,0,0,0)',
-                    title_text="Tweets by Source")
-    #fig1.update_traces(textinfo='label+percent', hoverinfo="label+percent+name")
+                        plot_bgcolor='rgba(0,0,0,0)',
+                        paper_bgcolor='rgba(0,0,0,0)',
+                        title_text="Sentiment Analysis",
+                        annotations=[dict(text='GHG', x=0.5, y=0.5, font_size=20, showarrow=False)])
+    fig1.update_traces(textinfo='label+percent', hoverinfo="label+percent+name")
     
     chart = fig1.to_html(config={'displayModeBar': False})
         
