@@ -129,7 +129,7 @@ def add_users_chunk(request_user, api, chunk, model, result_queue):
         users_to_add_data.append(user_to_add)
     result_queue.put(users_to_add_data)
 
-def update_table(request, api, tweepy_user_ids, model):
+def update_or_create_users(request, api, tweepy_user_ids, model):
     tweepy_user_ids # following_ids = api.get_friend_ids()
 
     # Récupération des utilisateurs existants
@@ -137,11 +137,11 @@ def update_table(request, api, tweepy_user_ids, model):
     existing_user_ids = set(existing_users.values_list('user_twitter_id', flat=True))
 
     # Suppression d'utilisateurs
-    user_ids_to_delete = existing_user_ids - tweepy_user_ids
-    model.objects.filter(user=request.user.userprofile, user_twitter_id__in=user_ids_to_delete).delete()
+    # user_ids_to_delete = existing_user_ids - tweepy_user_ids
+    # model.objects.filter(user=request.user.userprofile, user_twitter_id__in=user_ids_to_delete).delete()
 
     # Ajout d'utilisateurs
-    user_ids_to_add = set(tweepy_user_ids) - existing_user_ids
+    user_ids_to_add = set(tweepy_user_ids) # - existing_user_ids
     chunk_size = 100 # Taille des sous-listes
     user_ids_chunks = [list(user_ids_to_add)[i:i+chunk_size] for i in range(0, len(user_ids_to_add), chunk_size)]
     users_to_add_data = []
@@ -164,7 +164,43 @@ def update_table(request, api, tweepy_user_ids, model):
     
     # Récupération des informations des utilisateurs à partir de la base de données
     users_info = list(existing_users.filter(Q(user_twitter_id__in=tweepy_user_ids) | Q(user_twitter_id__in=user_ids_to_add)).values())
+    print(users_info)
     return users_info
+
+def update_or_create_users_info(request, api, user_id, model):
+    user = api.get_user(user_id=user_id)
+    tweepy_user_ids = []
+    name = []
+    screen_name = []
+    profile_image_url = []
+    description = []
+    location = []
+
+    for user_info in user:
+        tweepy_user_ids.append(user_info.id)
+        name.append(user_info.name)
+        screen_name.append(user_info.screen_name)
+        profile_image_url.append(user_info.profile_image_url.replace("_normal", ""))
+        description.append(user_info.description)
+        location.append(user_info.location)
+
+    # Récupérer les objets à mettre à jour    
+    objects_to_update = update_or_create_users(request, api, tweepy_user_ids, model)
+
+    # Modifier les champs à mettre à jour pour chaque objet
+    for i, obj in enumerate(objects_to_update):
+        obj.name = name[i]
+        obj.screen_name = screen_name[i]
+        obj.profile_image_url = profile_image_url[i]
+        obj.description = description[i]
+        obj.location = location[i]
+
+    # Mettre à jour les objets dans la base de données en utilisant bulk_update()
+    model.objects.bulk_update(objects_to_update, ['name', 'screen_name', 'profile_image_url', 'description', 'location'])
+
+    # Récupération des objets mis à jour ou créés
+    objects_updated_or_created = list(model.objects.filter(user=request.user.userprofile, user_twitter_id__in=tweepy_user_ids).values())
+    return objects_updated_or_created
 
 @transaction.atomic
 def get_non_followers(request):
@@ -176,7 +212,7 @@ def get_non_followers(request):
         follower_ids = api.get_follower_ids()
         # Vérification des abonnements qui ne suivent pas en retour
         not_following_back_ids = set(friend_ids) - set(follower_ids)
-        non_followers = update_table(request, api, not_following_back_ids, NotFollowingBack)
+        non_followers = update_or_create_users_info(request, api, not_following_back_ids, NotFollowingBack)
     except:
         pass
     
@@ -194,7 +230,7 @@ def get_mutual_followers(request):
         followers_set = set(followers)
         friends_set = set(friends)
         mutual_ids = followers_set.intersection(friends_set)
-        mutuals_info = update_table(request, api, mutual_ids, MutualFollower)
+        mutuals_info = update_or_create_users_info(request, api, mutual_ids, MutualFollower)
     except:
         pass
     
@@ -206,7 +242,7 @@ def get_followers(request):
         api = get_api(request)
         follower_user_ids = api.get_follower_ids()
         follower_ids = set(follower_user_ids)
-        followers_info = update_table(request, api, follower_ids, Follower)
+        followers_info = update_or_create_users_info(request, api, follower_ids, Follower)
     except:
         pass
     
@@ -218,12 +254,11 @@ def get_following(request):
         api = get_api(request)
         following_user_ids = api.get_friend_ids()
         following_ids = set(following_user_ids)
-        following_info = update_table(request, api, following_ids, Following)
+        following_info = update_or_create_users_info(request, api, following_ids, Following)
     except:
         pass
     
     return following_info
-
 
 @login_required
 def user_timeline(request):
@@ -393,6 +428,33 @@ def home(request):
     
     chart10 = fig10.to_html(config={'displayModeBar': False})
     
+    agg_df = df_metrics.pivot_table(index='week', columns='hour', values='tweets_txt', aggfunc='count')
+    
+    fig11 = go.Figure(data=go.Heatmap(z=agg_df.values,
+                                x=agg_df.columns,
+                                y=agg_df.index,
+                                colorscale='Reds'))
+
+    fig11.update_layout(margin=dict(l=20, r=20, t=30, b=20),
+                      xaxis_title=None,
+                      yaxis_title=None,
+                      plot_bgcolor='rgba(0,0,0,0)',
+                      paper_bgcolor='rgba(0,0,0,0)')
+    
+    chart11 = fig11.to_html(config={'displayModeBar': False})
+    
+    # Groupement des tweets par type de média
+    grouped = df_metrics.groupby('media_type').size().reset_index(name='counts')
+
+    fig12 = px.pie(grouped, values='counts', names='media_type', color_discrete_sequence=px.colors.sequential.RdBu, hole=.5)
+    fig12.update_layout(margin=dict(l=20, r=20, t=30, b=20),
+                        plot_bgcolor='rgba(0,0,0,0)',
+                        paper_bgcolor='rgba(0,0,0,0)',
+                        title_text="Media Type",
+                        annotations=[dict(text='GHG', x=0.5, y=0.5, font_size=20, showarrow=False)])
+    fig12.update_traces(textinfo='label+percent', hoverinfo="label+percent+name")
+    chart12 = fig12.to_html(config={'displayModeBar': False})
+    
     user_profile_twitter = get_user_profile(request)
             
     context = {'chart' : chart, 'chart2': chart2,
@@ -400,6 +462,7 @@ def home(request):
                 'chart5': chart5, 'chart6': chart6,
                 'chart7': chart7, 'chart8': chart8,
                 'chart9': chart9, 'chart10': chart10,
+                'chart11': chart11, 'chart12': chart12,
                 'user_profile_twitter' : user_profile_twitter
                 }
     

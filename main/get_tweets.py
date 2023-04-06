@@ -132,11 +132,13 @@ def status(api):
     year_month = []
     week = []
     month = []
+    hour = []
     tweets_txt = []
     nb_retweet = []
     nb_fav = []
     sentiment = []
     score = []
+    media_type = []
     
     for status in get_all_tweets(api):
         tweet_source.append(status.source)
@@ -144,18 +146,26 @@ def status(api):
         year_month.append(status.created_at.strftime("%Y-%m"))
         week.append(status.created_at.strftime('%A'))
         month.append(status.created_at.strftime('%B'))
+        hour.append(status.created_at.strftime('%H'))
         tweets_txt.append(status.full_text)
         sent = sentimenttextblob(status.full_text)
         sentiment.append(sent[0])
         score.append(sent[1])
         nb_retweet.append(status.retweet_count)
         nb_fav.append(status.favorite_count)
+        
+        if 'extended_entities' in status._json:
+            for media in status._json['extended_entities']['media']:
+                media_type.append(media['type'])
+        else:
+            media_type.append('text')
       
     dict_metrics = {'tweet_source':tweet_source, 'year':year,
           'tweets_txt':tweets_txt, 'nb_retweet':nb_retweet,
           'nb_favorite':nb_fav, 'year_month':year_month,
-          'week':week, 'month':month,
-          'sentiment':sentiment, 'score':score}
+          'week':week, 'month':month, 'hour':hour,
+          'sentiment':sentiment, 'score':score,
+          'media_type':media_type}
     
     df_metrics = pd.DataFrame(dict_metrics)
     return df_metrics

@@ -10,7 +10,7 @@ def update_not_following_back(sender, instance, **kwargs):
 
     # Récupération des informations de l'utilisateur sur Twitter
     user = api.get_user(user_id=instance.user_twitter_id)
-
+    print(user)
     # Mise à jour des informations dans la base de données
     instance.name = user.name
     instance.screen_name = user.screen_name
